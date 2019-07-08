@@ -61,4 +61,4 @@ For any questions, troubleshooting or contributions,  find me on:
 * Email: gachegua@gmail.com
 ### License
 MIT License
-Copyright (c) {2019} (gkarumba)[]
+Copyright (c) {2019} (gkarumba)[https://github.com/gkarumba/BlogPost/blob/master/LICENSE]
