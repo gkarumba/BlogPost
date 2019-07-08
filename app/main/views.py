@@ -30,7 +30,7 @@ def new_post():
         
         new_post = Post( description = description, title = title, user = current_user)
 
-        new_pitch.save_post()
+        new_post.save_post()
 
         return redirect(url_for('.index'))
 
@@ -41,12 +41,12 @@ def new_post():
 @main.route('/user/<uname>')
 def profile(uname):
     user = User.query.filter_by(username = uname).first()
-    post = Post.query.filter_by(user_id = user.id)
+    posts = Post.query.filter_by(user_id = user.id)
 
     if user is None:
         abort(404)
 
-    return render_template("profile/profile.html", user = user,pitches=pitches)
+    return render_template("profile/profile.html", user = user,posts=posts)
 
 @main.route('/user/<uname>/update',methods = ['GET','POST'])
 @login_required
@@ -81,11 +81,12 @@ def update_pic(uname):
 
 @main.route('/post/<int:id>')
 def single_post(id):
-    post = Post.query.get(id)
-    if post is None:
+    posts = Post.query.get(id)
+    print(posts)
+    if posts is None:
         abort(404)
-    format_post = markdown2.markdown(post.post,extras=["code-friendly", "fenced-code-blocks"])
-    return render_template('post.html',post = post,format_post=format_post)
+    format_post = markdown2.markdown(posts.description,extras=["code-friendly", "fenced-code-blocks"])
+    return render_template('post.html',posts = posts,format_post=format_post)
 
 
 @main.route("/post/new/comment/<int:id>",methods=["GET","POST"])

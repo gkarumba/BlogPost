@@ -9,7 +9,7 @@
                 <h3>Author:</h3>
                 <p class="card-subtitle mb-2 text-muted">{{post.user.username}}</p>
                 <h3>Post Title:</h3>
-                <h4> <a href="{{url_for('main.single_post',id=post.id)}}"></a>{{post.title}}</h4>
+                <h4> <a href="{{url_for('main.single_post',id=post.id)}}">{{post.title}}</a></h4>
                 <h3>About Post:</h3>
                 <p class="card-subtitle mb-2 text-muted">{{post.description}}</p>
                 </div>

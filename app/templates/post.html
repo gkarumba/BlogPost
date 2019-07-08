@@ -3,11 +3,14 @@
 {% block content%}
 <div class="container-fluid">
 
-    <div class="row">
-
-        <div class="col-sm-12">
+    <div class="row align-items-center" style="text-align:center;justify-content:center;">
+        <div class="col-md-6" style="border:2px solid #222;border-radius: 5px;box-shadow: 5px 10px #888888;margin-bottom: 10px;">
             {{format_post|safe}}
+            <a class="btn btn-outline-info btn-sm text-center" href="/pitch/new/comment/{{posts.id}}"> View Comments </a>
         </div>
+
     </div>
 </div>
 {%endblock%}
+
+
