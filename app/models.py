@@ -90,3 +90,12 @@ class Comment(db.Model):
         comment = Comment.query.filter_by(id=id).delete()
 
         return comment 
+
+class Quote:
+    '''
+    Quote class to define Quote Objects
+    '''
+
+    def __init__(self, author, quote):
+        self.author = author
+        self.quote = quote

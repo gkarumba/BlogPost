@@ -4,7 +4,9 @@ from ..models import Post,User, Comment
 from .forms import PostForm, UpdateProfile, CommentsForm
 from flask_login import login_required, current_user
 from .. import db,photos
-import markdown2 
+import markdown2
+from ..requests import get_quote 
+from ..email import mail_message
 
 @main.route('/')
 def index():
@@ -13,9 +15,10 @@ def index():
     View root page function that returns the index page and its data
     '''
     title = "Blog Post"
-    posts = Post.get_posts()
+    quote = get_quote()
+    posts = Post.query.order_by(Post.posted.desc()).all()
 
-    return render_template('index.html',title = title, posts=posts)
+    return render_template('index.html',title = title, posts=posts,quote=quote)
 
 
 @main.route('/post/new', methods = ['GET','POST'])
@@ -31,6 +34,9 @@ def new_post():
         new_post = Post( description = description, title = title, user = current_user)
 
         new_post.save_post()
+        users = User.query.all()
+        for user in users:
+            mail_message("New post","email/new_post",user.email,user=users)
 
         return redirect(url_for('.index'))
 
@@ -78,22 +84,43 @@ def update_pic(uname):
         db.session.commit()
     return redirect(url_for('main.profile',uname=uname))
 
+@main.route('/posts', methods=['GET', 'POST'])
+def posts():
+    posts = Post.query.order_by(Post.posted.desc()).all()
+    return render_template('posts.html', posts=posts)
 
 @main.route('/post/<int:id>')
 def single_post(id):
-    posts = Post.query.get(id)
+    posts = Post.query.filter_by(id=id)
+    comments = Comment.query.filter_by(post_id=id).all()
     print(posts)
     if posts is None:
         abort(404)
-    format_post = markdown2.markdown(posts.description,extras=["code-friendly", "fenced-code-blocks"])
-    return render_template('post.html',posts = posts,format_post=format_post)
+    # format_post = markdown2.markdown(posts.description,extras=["code-friendly", "fenced-code-blocks"])
+    return render_template('post.html',posts = posts,comments=comments)
 
+@main.route('/post/<int:id>/delete',methods = ['GET','POST'])
+@login_required
+def delete_post(id):
+    post = Post.query.filter_by(id=id).first()
+    comments = Comment.query.filter_by(id=id).all()
+    if post is None:
+        abort(404)
+    for comment in comments:
+        db.session.delete(comment)
+        db.session.commit()
+    db.session.delete(post)
+    db.session.commit()
+
+    return redirect(url_for('.posts',id=post.id))
+
+    return render_template('posts.html',form =form)
 
 @main.route("/post/new/comment/<int:id>",methods=["GET","POST"])
 @login_required
 def comment(id):
     
-    post = post.query.get(id)
+    post = Post.query.get(id)
     commentForm = CommentsForm()
 
     if id is None:
@@ -108,5 +135,24 @@ def comment(id):
 
     all_comments = Comment.query.filter_by(post_id=id).all()
 
-    return render_template("new_comment.html",post = post, id=id,comment_form = commentForm, all_comments = all_comments)
+    return render_template("comment.html",post = post, id=id,comment_form = commentForm, all_comments = all_comments)
 
+@main.route('/post/<int:id>/edit',methods = ['GET','POST'])
+@login_required
+def update_post(id):
+    post = Post.query.filter_by(id=id).first()
+    if post is None:
+        abort(404)
+
+    form = PostForm()
+
+    if form.validate_on_submit():
+        post.title = form.title.data
+        post.description = form.description.data
+
+        db.session.add(post)
+        db.session.commit()
+
+        return redirect(url_for('.post',id=post.id))
+
+    return render_template('new_post.html',form =form)
